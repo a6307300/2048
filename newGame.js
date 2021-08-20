@@ -2,19 +2,36 @@ var numbers = [];
 var variants;
 var currentScore;
 var totalScore;
+var size;
+var chanceof2;
 //localStorage.setItem('Total', 0);
 document.addEventListener("DOMContentLoaded", function () {
    newGame();
 });
 
+// getting size of game board
+function askSize() {
+   size = +prompt('Input size of game board from 2 till 6', '');
+   if (!isFinite(size) || size < 2 || size > 6) {
+      askSize();
+   }
+   let boardWidth = size * 100 + size * 20;
+   let boardHeight = size * 100 + size * 20;
+   document.getElementById('board').style.width = boardWidth + 'px';
+   document.getElementById('board').style.height = boardHeight + 'px';
+}
+
+
+
 // creation of game board
 function newGame() {
+   askSize();
    currentScore = 0;
    document.getElementById('currentScore').innerText = 0;
    document.getElementById('totalScore').innerText = localStorage.getItem('Total') || 0;
    numbers = [];
    document.getElementById('board').innerHTML = '';
-   for (let i = 1; i <= 16; i++) {
+   for (let i = 1; i <= size * size; i++) {
       let number = document.createElement('div');
       number.className = 'number';
       number.innerText = 0;
@@ -23,8 +40,9 @@ function newGame() {
    }
    randomTwo();
    randomTwo();
-   colorNumbers();
    document.addEventListener('keydown', keyButtons);
+   //numbers[0].innerText = 1024;
+   //numbers[1].innerText = 1024;
 }
 
 //establishment for Best score
@@ -38,143 +56,190 @@ function totalScore2() {
    document.getElementById('currentScore').innerText = currentScore;
 }
 
+// generate  10% variety of appearing 4
+function variety10() {
+   let chance = Math.trunc(Math.random() * 10);
+   console.log(chance)
+   if (chance == 2) {
+      chanceof2 = 4;
+   } else {
+      chanceof2 = 2;
+   }
+}
 
-
-// random 2 in game
+// random 2 or 4 in game
 function randomTwo() {
-   var number2 = Math.trunc(Math.random() * 16);
+   variety10();
+   let doubleSize = size * size;
+   var number2 = Math.trunc(Math.random() * doubleSize);
    if (numbers[number2].innerText == 0) {
-      numbers[number2].innerText = 2;
+      numbers[number2].innerText = chanceof2;
    } else {
       randomTwo();
    };
    colorNumbers();
-   //numbers[0].innerText = 1024;
-   //numbers[1].innerText = 1024;
+
 }
 
-// common comparison and changing for all variants of moving
-function commonChanging(a, b, c, d) {
-   if (+numbers[a].innerText == +numbers[b].innerText) {
-      numbers[a].innerText = Number(numbers[a].innerText) * 2;
-      currentScore = currentScore + Number(numbers[a].innerText);
-      delElem(b);
-   }
-   else if (+numbers[a].innerText == +numbers[c].innerText && numbers[b].innerText == 0) {
-      numbers[a].innerText = Number(numbers[a].innerText) * 2;
-      currentScore = currentScore + Number(numbers[a].innerText);
-      delElem(b, c);
-   }
-   else if (+numbers[a].innerText == +numbers[d].innerText && numbers[c].innerText == 0 && numbers[b].innerText == 0) {
-      numbers[a].innerText = Number(numbers[a].innerText) * 2;
-      currentScore = currentScore + Number(numbers[a].innerText);
-      delElem(b, c, d);
+function compareRight() {
+   let ceil = size * (size - 1);
+   let k = size - 1;
+   do {
+      for (let i = 0 + k; i <= ceil + k; i = i + size) {
+         for (let j = i - 1; j >= i - k; j--) {
+            if (numbers[i].innerText == numbers[j].innerText) {
+               numbers[i].innerText = Number(numbers[i].innerText) * 2;
+               currentScore = currentScore + Number(numbers[i].innerText);
+               numbers[j].innerText = 0;
+            };
+         }
+      }
+      k--;
+      totalScore2();
+   } while (k >= 0);
+}
+
+function sliderRight() {
+   let ceil = size * (size - 1);
+   let k = size - 1;
+   do {
+      for (let i = 0 + k; i <= ceil + k; i = i + size) {
+         for (let j = i - 1; j >= i - k; j--) {
+            if (numbers[i].innerText == 0) {
+               numbers[i].innerText = numbers[j].innerText;
+               numbers[j].innerText = 0;
+            }
+         }
+      }
+      k--;
+   } while (k >= 0);
+}
+
+function compareLeft() {
+   let ceil = size * (size - 1);
+   let k = 0;
+   do {
+      for (let i = 0 + k; i <= ceil + k; i = i + size) {
+         for (let j = i + 1; j <= i + size - k - 1; j++) {
+            if (numbers[i].innerText == numbers[j].innerText) {
+               numbers[i].innerText = Number(numbers[i].innerText) * 2;
+               currentScore = currentScore + Number(numbers[i].innerText);
+               numbers[j].innerText = 0;
+            };
+         }
+      }
+      k++;
+      totalScore2();
+   } while (k < size - 1);
+}
+
+function sliderLeft() {
+   let ceil = size * (size - 1);
+   let k = 0;
+   do {
+      for (let i = 0 + k; i <= ceil + k; i = i + size) {
+         for (let j = i + 1; j <= i + size - k - 1; j++) {
+            if (numbers[i].innerText == 0) {
+               numbers[i].innerText = numbers[j].innerText;
+               numbers[j].innerText = 0;
+            }
+         }
+      }
+      k++;
+   } while (k < size - 1);
+}
+
+function compareUp() {
+   let ceil = size * (size - 1) - 1;
+   for (let i = 0; i <= ceil; i++) {
+      let j = i + size;
+      do {
+         if (numbers[i].innerText == numbers[j].innerText) {
+            numbers[i].innerText = Number(numbers[i].innerText) * 2;
+            currentScore = currentScore + Number(numbers[i].innerText);
+            numbers[j].innerText = 0;
+         };
+         j = j + size;
+         totalScore2();
+      } while (j < numbers.length);
    };
-   if (+numbers[b].innerText == +numbers[c].innerText) {
-      numbers[b].innerText = Number(numbers[b].innerText) * 2;
-      currentScore = currentScore + Number(numbers[b].innerText);
-      delElem(c);
-   }
-   else if (+numbers[b].innerText == +numbers[d].innerText && numbers[c].innerText == 0) {
-      numbers[b].innerText = Number(numbers[b].innerText) * 2;
-      currentScore = currentScore + Number(numbers[b].innerText);
-      delElem(c, d);
-   }
-   if (Number(numbers[c].innerText) == Number(numbers[d].innerText)) {
-      numbers[c].innerText = Number(numbers[c].innerText) * 2;
-      currentScore = currentScore + Number(numbers[c].innerText);
-      delElem(d);
-   }
 }
 
-// supporting functions for common comparison______________________________________________________________________________________________________________
-// delete elements after comparison
-function delElem(x, y = x, z = x) {
-   numbers[x].innerText = 0;
-   numbers[y].innerText = 0;
-   numbers[z].innerText = 0;
+function sliderUp() {
+   let i = 0;
+   do {
+      for (let k = size; k < numbers.length; k++) {
+         if (numbers[k - size].innerText == 0) {
+            numbers[k - size].innerText = numbers[k].innerText;
+            numbers[k].innerText = 0;
+         }
+      }
+      i++;
+   } while (i <= size);
 }
 
-// slide elements after changing
-
-function slideElem(p, x, y, z) {
-   let forSort = [];
-   forSort.push(+numbers[p].innerText, +numbers[x].innerText, +numbers[y].innerText, +numbers[z].innerText);
-   let filtered = forSort.filter(item => item > 0);
-   numbers[p].innerText = filtered[0] || 0;
-   numbers[x].innerText = filtered[1] || 0;
-   numbers[y].innerText = filtered[2] || 0;
-   numbers[z].innerText = filtered[3] || 0;
-}
-// supporting functions for common comparison______________________________________________________________________________________________________________
-
-// game process - function up + slide
-function up() {
-   for (let i = 0; i <= 3; i++) {
-      commonChanging(i, i + 4, i + 8, i + 12);
-      slideElem(i, i + 4, i + 8, i + 12);
-      colorNumbers();
+function compareDown() {
+   for (let i = numbers.length - 1; i >= size; i--) {
+      let j = i - size;
+      do {
+         if (numbers[i].innerText == numbers[j].innerText) {
+            numbers[i].innerText = Number(numbers[i].innerText) * 2;
+            currentScore = currentScore + Number(numbers[i].innerText);
+            numbers[j].innerText = 0;
+         };
+         j = j - size;
+         totalScore2();
+      } while (j >= 0);
    };
-   randomTwo();
-   totalScore2();
 }
 
-function down() {
-   for (let i = 15; i >= 12; i--) {
-      commonChanging(i, i - 4, i - 8, i - 12);
-      slideElem(i, i - 4, i - 8, i - 12);
-      colorNumbers();
-   };
-   randomTwo();
-   totalScore2();
-}
-
-function right() {
-   for (let i = 15; i >= 3; i = i - 4) {
-      commonChanging(i, i - 1, i - 2, i - 3);
-      slideElem(i, i - 1, i - 2, i - 3);
-      colorNumbers();
-   };
-   randomTwo();
-   totalScore2();
-}
-
-function left() {
-   for (let i = 0; i <= 12; i = i + 4) {
-      commonChanging(i, i + 1, i + 2, i + 3);
-      slideElem(i, i + 1, i + 2, i + 3);
-      colorNumbers();
-   };
-   randomTwo();
-   totalScore2();
+function sliderDown() {
+   let i = 0;
+   do {
+      for (let k = numbers.length - 1; k >= size; k--) {
+         if (numbers[k].innerText == 0) {
+            numbers[k].innerText = numbers[k - size].innerText;
+            numbers[k - size].innerText = 0;
+         }
+      }
+      i++;
+   } while (i <= size);
 }
 
 function keyButtons(event) {
    switch (event.key) {
       case "ArrowLeft":
-         left()
+         compareLeft();
+         sliderLeft();
+         randomTwo();
          loseWin();
          break;
       case "ArrowRight":
-         right()
+         compareRight();
+         sliderRight();
+         randomTwo();
          loseWin();
          break;
       case "ArrowUp":
-         up()
+         compareUp();
+         sliderUp();
+         randomTwo();
          loseWin();
          break;
       case "ArrowDown":
-         down()
+         compareDown();
+         sliderDown();
+         randomTwo();
          loseWin();
          break;
    };
 }
 
-// variants of ending game
+//variants of ending game
 function loseWin() {
    compareEach();
    let empty = 0;
-   for (let i = 0; i <= 15; i++) {
+   for (let i = 0; i < numbers.length; i++) {
       if (numbers[i].innerText == 2048) {
          alert('Win!');
          document.removeEventListener('keydown', keyButtons);
@@ -187,29 +252,31 @@ function loseWin() {
       document.removeEventListener('keydown', keyButtons);
    }
 }
-// supporting function for variants of ending game______________________________________________________________________________________________________________
+// // supporting function for variants of ending game______________________________________________________________________________________________________________
 function compareEach() {
    variants = 0;
-   for (let i = 0; i <= 11; i++) {
-      if (i != 3 && i != 7 && i != 11) {
-         if (numbers[i].innerText == numbers[i + 1].innerText || numbers[i].innerText == numbers[i + 4].innerText) {
+   for (let i = 0; i < numbers.length - size; i++) {
+      if ((i + 1) % size != 0) {
+         if (numbers[i].innerText == numbers[i + 1].innerText || numbers[i].innerText == numbers[i + size].innerText) {
             variants++;
          };
       } else {
-         if (numbers[i].innerText == numbers[i + 4].innerText) {
+         if (numbers[i].innerText == numbers[i + size].innerText) {
             variants++;
          };
       };
    }
-   if (numbers[12].innerText == numbers[13].innerText || numbers[13].innerText == numbers[14].innerText || numbers[14].innerText == numbers[15].innerText) {
-      variants++;
-   };
+   for (let i = numbers.length - size; i < numbers.length - 1; i++) {
+      if (numbers[i].innerText == numbers[i + 1].innerText) {
+         variants++;
+      };
+   }
 }
 
 // design part
 
 function colorNumbers() {
-   for (let i = 0; i <= 15; i++) {
+   for (let i = 0; i < numbers.length; i++) {
       if (numbers[i].innerText == 0) {
          numbers[i].style.backgroundColor = "#D8BFD8";
          numbers[i].style.color = "#D8BFD8";
