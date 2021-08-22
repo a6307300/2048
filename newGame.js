@@ -4,9 +4,11 @@ var currentScore;
 var totalScore;
 var size;
 var chanceof2;
+var sum;
 //localStorage.setItem('Total', 0);
 document.addEventListener("DOMContentLoaded", function () {
    newGame();
+   document.getElementById('button').onclick = newGame;
 });
 
 // getting size of game board
@@ -81,22 +83,58 @@ function randomTwo() {
 
 }
 
+// functions for summing of numbers between boundaries--------------------------------------------------------------------
+
+function sumBetweenRight(a, b) {
+   sum = 0;
+   if (Math.abs(a - b) != 1) {
+      for (let i = b + 1; i < a; i++) {
+         sum = sum + Number(numbers[i].innerText);
+      }
+   }
+}
+function sumBetweenLeft(a, b) {
+   sum = 0;
+   if (Math.abs(a - b) != 1) {
+      for (let i = a + 1; i < b; i++) {
+         sum = sum + Number(numbers[i].innerText);
+      }
+   }
+}
+function sumBetweenUp(a, b) {
+   sum = 0;
+   if (Math.abs(a - b) != 1) {
+      for (let i = a + size; i < b; i = i + size) {
+         sum = sum + Number(numbers[i].innerText);
+      }
+   }
+}
+function sumBetweenDown(a, b) {
+   sum = 0;
+   if (Math.abs(a - b) != 1) {
+      for (let i = b + size; i < a; i = i + size) {
+         sum = sum + Number(numbers[i].innerText);
+      }
+   }
+}
+//-------------------------------------------------------------------------------------------------------------------------
+
 function compareRight() {
    let ceil = size * (size - 1);
-   let k = size - 1;
-   do {
+   for (let k = size - 1; k > 0; k--) {
       for (let i = 0 + k; i <= ceil + k; i = i + size) {
          for (let j = i - 1; j >= i - k; j--) {
-            if (numbers[i].innerText == numbers[j].innerText) {
+            sumBetweenRight(i, j);
+            if (numbers[i].innerText == numbers[j].innerText && sum == 0) {
                numbers[i].innerText = Number(numbers[i].innerText) * 2;
                currentScore = currentScore + Number(numbers[i].innerText);
                numbers[j].innerText = 0;
             };
+            totalScore2();
          }
-      }
-      k--;
-      totalScore2();
-   } while (k >= 0);
+         //totalScore2();
+      };
+   }
 }
 
 function sliderRight() {
@@ -104,6 +142,7 @@ function sliderRight() {
    let k = size - 1;
    do {
       for (let i = 0 + k; i <= ceil + k; i = i + size) {
+         let j = i - 1;
          for (let j = i - 1; j >= i - k; j--) {
             if (numbers[i].innerText == 0) {
                numbers[i].innerText = numbers[j].innerText;
@@ -112,25 +151,25 @@ function sliderRight() {
          }
       }
       k--;
-   } while (k >= 0);
+   } while (k > 0);
 }
 
 function compareLeft() {
    let ceil = size * (size - 1);
-   let k = 0;
-   do {
+   for (let k = 0; k < size - 1; k++) {
       for (let i = 0 + k; i <= ceil + k; i = i + size) {
          for (let j = i + 1; j <= i + size - k - 1; j++) {
-            if (numbers[i].innerText == numbers[j].innerText) {
+            sumBetweenLeft(i, j);
+            if (numbers[i].innerText == numbers[j].innerText && sum == 0) {
                numbers[i].innerText = Number(numbers[i].innerText) * 2;
                currentScore = currentScore + Number(numbers[i].innerText);
                numbers[j].innerText = 0;
             };
+            totalScore2();
          }
+         //totalScore2();
       }
-      k++;
-      totalScore2();
-   } while (k < size - 1);
+   }
 }
 
 function sliderLeft() {
@@ -152,16 +191,15 @@ function sliderLeft() {
 function compareUp() {
    let ceil = size * (size - 1) - 1;
    for (let i = 0; i <= ceil; i++) {
-      let j = i + size;
-      do {
-         if (numbers[i].innerText == numbers[j].innerText) {
+      for (let j = i + size; j < numbers.length; j = j + size) {
+         sumBetweenUp(i, j);
+         if (numbers[i].innerText == numbers[j].innerText && sum == 0) {
             numbers[i].innerText = Number(numbers[i].innerText) * 2;
             currentScore = currentScore + Number(numbers[i].innerText);
             numbers[j].innerText = 0;
-         };
-         j = j + size;
+         }
          totalScore2();
-      } while (j < numbers.length);
+      }
    };
 }
 
@@ -180,16 +218,15 @@ function sliderUp() {
 
 function compareDown() {
    for (let i = numbers.length - 1; i >= size; i--) {
-      let j = i - size;
-      do {
-         if (numbers[i].innerText == numbers[j].innerText) {
+      for (let j = i - size; j >= 0; j = j - size) {
+         sumBetweenDown(i, j);
+         if (numbers[i].innerText == numbers[j].innerText && sum == 0) {
             numbers[i].innerText = Number(numbers[i].innerText) * 2;
             currentScore = currentScore + Number(numbers[i].innerText);
             numbers[j].innerText = 0;
          };
-         j = j - size;
          totalScore2();
-      } while (j >= 0);
+      };
    };
 }
 
